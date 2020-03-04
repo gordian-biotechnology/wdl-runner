@@ -9,7 +9,7 @@
 # monitor_wdl_pipeline.sh
 #
 # Simple script that can be used to monitor the status of a WDL pipeline
-# run by the Broad's Cromwell (https://github.com/broadinstitute/cromwell) 
+# run by the Broad's Cromwell (https://github.com/broadinstitute/cromwell)
 # on GCP.
 #
 # The script accepts an operation ID for a pipeline, extracts the
@@ -25,7 +25,7 @@ set -o errexit
 set -o nounset
 
 readonly SCRIPT_DIR=$(dirname "${0}")
-readonly REPO_ROOT=$(cd ${SCRIPT_DIR}/ && pwd) 
+readonly REPO_ROOT=$(cd ${SCRIPT_DIR}/ && pwd)
 
 # Bring in polling utility functions
 source ${REPO_ROOT}/operations_util.sh
@@ -73,12 +73,12 @@ readonly POLL_INTERVAL_SECONDS="${2:-60}"  # Default: 60 seconds between request
 readonly POLL_WAIT_MAX="${3:-}"            # Default: wait forever
 
 # Get GCS paths from the operation
-LOGGING=$(get_operation_value "${OPERATION_ID}" \
-            "metadata.request.pipelineArgs.logging.gcsPath")
+LOGGING=$(get_operation_logging "${OPERATION_ID}" \
+            "metadata.pipeline.actions")
 WORKSPACE=$(get_operation_value "${OPERATION_ID}" \
-            "metadata.request.pipelineArgs.inputs.WORKSPACE")
+            "metadata.pipeline.environment.WORKSPACE")
 OUTPUTS=$(get_operation_value "${OPERATION_ID}" \
-            "metadata.request.pipelineArgs.inputs.OUTPUTS")
+            "metadata.pipeline.environment.OUTPUTS")
 
 echo "Logging: ${LOGGING}"
 echo "Workspace: ${WORKSPACE}"
@@ -89,7 +89,7 @@ POLL_WAIT_TOTAL=0
 LOGS_COUNT=-1
 PREEMPT_COUNT=-1
 OUTPUT_COUNT=-1
-while [[ $(get_operation_done_status "${OPERATION_ID}") == "false" ]]; do
+while [[ $(get_operation_done_status "${OPERATION_ID}") != "true" ]]; do
 
   echo
   echo "$(date '+%Y-%m-%d %H:%M:%S'): operation not complete"

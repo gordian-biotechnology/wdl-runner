@@ -30,7 +30,7 @@
 #       startTime: '2016-08-06T00:26:22.863609038Z'
 #     - description: ok
 #       startTime: '2016-08-06T00:26:24.296178476Z'
-#   name: operations/OPERATION-ID  
+#   name: operations/OPERATION-ID
 #
 # If an error has occurred, then the top-level "errors" object will be present.
 #
@@ -59,7 +59,7 @@ readonly OPERATION_ID="${1}"
 readonly POLL_INTERVAL_SECONDS="${2:-60}"  # Default 60 seconds between requests
 
 # Loop until operation complete
-while [[ $(get_operation_done_status "${OPERATION_ID}") == "false" ]]; do
+while [[ $(get_operation_done_status "${OPERATION_ID}") != "true" ]]; do
   echo "Operation not complete. Sleeping ${POLL_INTERVAL_SECONDS} seconds"
   sleep ${POLL_INTERVAL_SECONDS}
 done
@@ -72,4 +72,3 @@ if [[ ${OUTPUT_LEVEL:-} == "verbose" ]]; then
 else
   get_operation_status "${OPERATION_ID}"
 fi
-
