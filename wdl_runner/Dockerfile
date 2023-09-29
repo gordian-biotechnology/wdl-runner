@@ -4,7 +4,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-FROM openjdk:8-jre
+FROM adoptopenjdk:11.0.6_10-jre-hotspot
 
 # Install python
 RUN apt-get update && \
@@ -48,8 +48,8 @@ RUN chmod u+x /wdl_runner/wdl_runner.sh
 # Copy Cromwell and the Cromwell conf template
 RUN mkdir /cromwell
 RUN cd /cromwell && \
-    curl -L -O https://github.com/broadinstitute/cromwell/releases/download/53/cromwell-53.jar
-RUN ln /cromwell/cromwell-53.jar /cromwell/cromwell.jar
+    curl -L -O https://github.com/broadinstitute/cromwell/releases/download/76/cromwell-76.jar
+RUN ln /cromwell/cromwell-76.jar /cromwell/cromwell.jar
 COPY jes_template.conf /cromwell/
 
 # Set up the runtime environment
