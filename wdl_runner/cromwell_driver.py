@@ -86,7 +86,7 @@ class CromwellDriver(object):
     wait_interval = 5
 
     time.sleep(wait_interval)
-    for attempt in range(max_time_wait/wait_interval):
+    for attempt in range(int(max_time_wait/wait_interval)):
       try:
         job = self.fetch(post=True, files=files)
         break

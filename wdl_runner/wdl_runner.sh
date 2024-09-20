@@ -24,7 +24,7 @@ readonly SCRIPT_DIR=$(dirname $0)
 cd "${SCRIPT_DIR}"
 
 # Execute the wdl_runner
-python -u wdl_runner.py \
+python3 -u wdl_runner.py \
  --wdl "${INPUT_PATH}"/wf.wdl \
  --workflow-inputs "${INPUT_PATH}"/wf.inputs.json \
  --working-dir "${WORKSPACE}" \

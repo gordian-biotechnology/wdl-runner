@@ -94,12 +94,12 @@ class Runner(object):
         project_id = gce_get_metadata('project/project-id')
 
         if project and project != project_id:
-            logging.warning("Overriding project ID %s with %s", project, project_id)
+            logging.info("Overriding project ID %s with %s", project, project_id)
 
     except urllib.error.URLError as e:
-        logging.warning("URLError trying to fetch project ID from Compute Engine metadata")
-        logging.warning(e)
-        logging.warning("Assuming not running on Compute Engine")
+        logging.info("URLError trying to fetch project ID from Compute Engine metadata")
+        logging.info(e)
+        logging.info("Assuming not running on Compute Engine")
 
         project_id = project
 
@@ -173,7 +173,7 @@ def main():
   logging.basicConfig(level=logging.INFO, format=FORMAT)
 
   # Don't info-log every new connection to localhost, to keep stderr small.
-  logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
+  logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)
 
   runner = Runner(args, os.environ)
   runner.run()

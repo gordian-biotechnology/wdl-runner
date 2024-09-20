@@ -20,12 +20,12 @@ import sys_util
 
 
 def file_safe_substitute(file_name, mapping):
-  """Performs placeholder replacement on a file, saving contents in place."""
+    # Open the file in binary mode
+    with open(file_name, 'rb') as f:
+        file_contents = f.read().decode('utf-8')  # Decode the bytes to a string
 
-  with open(file_name, 'rb') as f:
-    file_contents = f.read()
+    # Perform substitution using string.Template
     return string.Template(file_contents).safe_substitute(mapping)
-
 
 def gsutil_cp(source_files, dest_dir):
   """Copies files to GCS and exits on error."""
@@ -41,7 +41,7 @@ def gsutil_cp(source_files, dest_dir):
     if not return_code:
       return
 
-    logging.warn("Copy %s to %s failed: attempt %d",
+    logging.info("Copy %s to %s failed: attempt %d",
                  source_files, dest_dir, attempt)
 
   sys_util.exit_with_error(
