@@ -33,7 +33,8 @@ import argparse
 import json
 import logging
 import os
-import urllib2
+import urllib3
+from urllib3.exceptions import HTTPError, MaxRetryError, NewConnectionError
 
 import cromwell_driver
 import file_util
@@ -45,11 +46,11 @@ WDL_RUN_METADATA_FILE = 'wdl_run_metadata.json'
 
 def gce_get_metadata(path):
   """Queries the GCE metadata server the specified value."""
-  req = urllib2.Request(
+  req = urllib3.request(
       'http://metadata/computeMetadata/v1/%s' % path,
       None, {'Metadata-Flavor': 'Google'})
 
-  return urllib2.urlopen(req).read()
+  return urllib3.urlopen(req).read()
 
 
 class Runner(object):
@@ -84,7 +85,14 @@ class Runner(object):
         logging.warning("Overridding project ID %s with %s",
                         project, project_id)
 
-    except urllib2.URLError as e:
+    except MaxRetryError as e:
+      print(f"Max retries exceeded: {e}")
+    except NewConnectionError as e:
+      print(f"Failed to establish a new connection: {e}")
+    except HTTPError as e:
+      print(f"HTTP error occurred: {e}")
+    except Exception as e:
+      print(f"An unexpected error occurred: {e}")
       logging.warning(
           "URLError trying to fetch project ID from Compute Engine metdata")
       logging.warning(e)

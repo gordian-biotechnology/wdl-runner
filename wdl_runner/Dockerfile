@@ -17,7 +17,7 @@ RUN apt-get update && \
     apt-get install python3-pip --yes
 
 # Install Python "requests" (for cromwell_driver.py) package
-RUN pip3 install requests simplejson
+RUN pip3 install requests simplejson urrlib3
 
 # Install Google Python client (for file_util.py) package
 RUN pip3 install --upgrade google-api-python-client
