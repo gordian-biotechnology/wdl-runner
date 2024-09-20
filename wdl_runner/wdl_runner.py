@@ -33,7 +33,9 @@ import argparse
 import json
 import logging
 import os
-import urllib2
+# import urllib2
+import urllib.request
+import urllib.error
 
 import cromwell_driver
 import file_util
@@ -43,13 +45,24 @@ import wdl_outputs_util
 WDL_RUN_METADATA_FILE = 'wdl_run_metadata.json'
 
 
-def gce_get_metadata(path):
-  """Queries the GCE metadata server the specified value."""
-  req = urllib2.Request(
-      'http://metadata/computeMetadata/v1/%s' % path,
-      None, {'Metadata-Flavor': 'Google'})
+# def gce_get_metadata(path):
+#   """Queries the GCE metadata server the specified value."""
+#   req = urllib2.Request(
+#       'http://metadata/computeMetadata/v1/%s' % path,
+#       None, {'Metadata-Flavor': 'Google'})
 
-  return urllib2.urlopen(req).read()
+#   return urllib2.urlopen(req).read()
+
+def gce_get_metadata(path):
+    """Queries the GCE metadata server for the specified value."""
+    req = urllib.request.Request(
+        f'http://metadata/computeMetadata/v1/{path}',
+        None, {'Metadata-Flavor': 'Google'}
+    )
+
+    with urllib.request.urlopen(req) as response:
+        return response.read().decode('utf-8')
+
 
 
 class Runner(object):
@@ -78,27 +91,25 @@ class Runner(object):
 
   def fill_cromwell_conf(self, cromwell_conf, working_dir, project):
     try:
-      project_id = gce_get_metadata('project/project-id')
+        project_id = gce_get_metadata('project/project-id')
 
-      if project and project != project_id:
-        logging.warning("Overridding project ID %s with %s",
-                        project, project_id)
+        if project and project != project_id:
+            logging.warning("Overriding project ID %s with %s", project, project_id)
 
-    except urllib2.URLError as e:
-      logging.warning(
-          "URLError trying to fetch project ID from Compute Engine metdata")
-      logging.warning(e)
-      logging.warning("Assuming not running on Compute Engine")
+    except urllib.error.URLError as e:
+        logging.warning("URLError trying to fetch project ID from Compute Engine metadata")
+        logging.warning(e)
+        logging.warning("Assuming not running on Compute Engine")
 
-      project_id = project
+        project_id = project
 
     new_conf_data = file_util.file_safe_substitute(cromwell_conf, {
         'project_id': project_id,
         'working_dir': working_dir
-        })
+    })
 
-    with open(cromwell_conf, 'wb') as f:
-      f.write(new_conf_data)
+    with open(cromwell_conf, 'w') as f:
+        f.write(new_conf_data)
 
   def copy_workflow_output(self, result):
     output_files = wdl_outputs_util.get_workflow_output(
@@ -163,8 +174,6 @@ def main():
 
   # Don't info-log every new connection to localhost, to keep stderr small.
   logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
-  logging.getLogger("requests.packages.urllib3.connectionpool").setLevel(
-      logging.WARNING)
 
   runner = Runner(args, os.environ)
   runner.run()
