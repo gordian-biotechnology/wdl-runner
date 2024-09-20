@@ -4,33 +4,26 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-FROM adoptopenjdk:11.0.6_10-jre-hotspot
+FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:debian_component_based
 
 # Install python
 RUN apt-get update && \
-    apt-get install python --yes && \
+    apt-get install wget python3 openjdk-11-jre --yes && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install gcloud
-# See https://cloud.google.com/sdk/
-RUN curl https://sdk.cloud.google.com | bash
-
-# Add the install location explicitly to the path (for non-interactive shells)
-ENV PATH /root/google-cloud-sdk/bin:$PATH
-
 # Install pip for the next two steps...
 RUN apt-get update && \
-    apt-get install python-pip --yes
+    apt-get install python3-pip --yes
 
 # Install Python "requests" (for cromwell_driver.py) package
-RUN pip install requests simplejson
+RUN pip3 install requests simplejson
 
 # Install Google Python client (for file_util.py) package
-RUN pip install --upgrade google-api-python-client
+RUN pip3 install --upgrade google-api-python-client
 
 # Remove pip
-RUN apt-get remove --yes python-pip && \
+RUN apt-get remove --yes python3-pip && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -48,8 +41,8 @@ RUN chmod u+x /wdl_runner/wdl_runner.sh
 # Copy Cromwell and the Cromwell conf template
 RUN mkdir /cromwell
 RUN cd /cromwell && \
-    curl -L -O https://github.com/broadinstitute/cromwell/releases/download/85/cromwell-85.jar
-RUN ln /cromwell/cromwell-85.jar /cromwell/cromwell.jar
+    curl -L -O https://github.com/broadinstitute/cromwell/releases/download/87/cromwell-87.jar
+RUN ln /cromwell/cromwell-87.jar /cromwell/cromwell.jar
 COPY jes_template.conf /cromwell/
 
 # Set up the runtime environment
@@ -57,3 +50,6 @@ ENV CROMWELL /cromwell/cromwell.jar
 ENV CROMWELL_CONF /cromwell/jes_template.conf
 
 WORKDIR /wdl_runner
+
+
+#docker build -t gcr.io/cromwell-test-237800/wdl_runner:crom87 -f ./Dockerfile ./ && docker push gcr.io/cromwell-test-237800/wdl_runner:crom87
