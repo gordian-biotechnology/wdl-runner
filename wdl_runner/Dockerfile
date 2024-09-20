@@ -6,11 +6,24 @@
 
 FROM adoptopenjdk:11.0.6_10-jre-hotspot
 
-# Install python
+# Install python from the deadsnakes PPA
 RUN apt-get update && \
-    apt-get install python --yes && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.8 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1
+
+
+RUN apt-get update && \
+    apt-get install -y python3.8-distutils && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3.8 get-pip.py && \
+    rm get-pip.py
+
 
 # Install gcloud
 # See https://cloud.google.com/sdk/
@@ -20,19 +33,22 @@ RUN curl https://sdk.cloud.google.com | bash
 ENV PATH /root/google-cloud-sdk/bin:$PATH
 
 # Install pip for the next two steps...
-RUN apt-get update && \
-    apt-get install python-pip --yes
+# RUN apt-get update && \
+#     apt-get install python3-pip --yes
+#     # apt-get install python3-pip --yes
 
 # Install Python "requests" (for cromwell_driver.py) package
-RUN pip install requests simplejson
+RUN pip3.8 install requests simplejson protobuf
+RUN pip3.8 install google-auth
+RUN pip3.8 install google-auth-httplib2
 
 # Install Google Python client (for file_util.py) package
-RUN pip install --upgrade google-api-python-client
+RUN pip3.8 install --upgrade google-api-python-client google-auth-httplib2
 
 # Remove pip
-RUN apt-get remove --yes python-pip && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# RUN apt-get remove --yes python-pip && \
+#     apt-get clean && \
+#     rm -rf /var/lib/apt/lists/*
 
 # Copy the wdl_runner python, shell script, and dependencies
 RUN mkdir /wdl_runner

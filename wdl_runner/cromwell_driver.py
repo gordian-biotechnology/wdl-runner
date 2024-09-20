@@ -82,18 +82,24 @@ class CromwellDriver(object):
     # Poll up to a minute for successful connect and submit.
 
     job = None
-    max_time_wait = 60
+    max_time_wait = 120
     wait_interval = 5
 
     time.sleep(wait_interval)
-    for attempt in range(max_time_wait/wait_interval):
-      try:
-        job = self.fetch(post=True, files=files)
-        break
-      except requests.exceptions.ConnectionError as e:
-        logging.info("Failed to connect to Cromwell (attempt %d): %s",
-          attempt + 1, e)
-        time.sleep(wait_interval)
+    try:
+        # Attempt to interpret the range boundaries as integers directly
+        total_attempts = max_time_wait // wait_interval
+    except TypeError:
+        # If there's a type error, convert the operands to integers
+        total_attempts = int(max_time_wait) // int(wait_interval)
+
+    for attempt in range(total_attempts):
+        try:
+            job = self.fetch(post=True, files=files)
+            break
+        except requests.exceptions.ConnectionError as e:
+            logging.info("Failed to connect to Cromwell (attempt %d): %s", attempt + 1, e)
+            time.sleep(wait_interval)
 
     if not job:
       sys_util.exit_with_error(

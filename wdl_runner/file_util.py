@@ -20,11 +20,20 @@ import sys_util
 
 
 def file_safe_substitute(file_name, mapping):
-  """Performs placeholder replacement on a file, saving contents in place."""
+    """Performs placeholder replacement on a file, saving contents in place."""
+    
+    try:
+        # Original code (attempt to handle as bytes-like object)
+        with open(file_name, 'rb') as f:
+            file_contents = f.read()
+            substituted_contents = string.Template(file_contents).safe_substitute(mapping)
+    except TypeError:
+        # New code (handle as string)
+        with open(file_name, 'r') as f:
+            file_contents = f.read()
+            substituted_contents = string.Template(file_contents).safe_substitute(mapping)
 
-  with open(file_name, 'rb') as f:
-    file_contents = f.read()
-    return string.Template(file_contents).safe_substitute(mapping)
+    return substituted_contents
 
 
 def gsutil_cp(source_files, dest_dir):

@@ -33,7 +33,8 @@ import argparse
 import json
 import logging
 import os
-import urllib2
+import urllib.request
+import urllib.error
 
 import cromwell_driver
 import file_util
@@ -45,11 +46,11 @@ WDL_RUN_METADATA_FILE = 'wdl_run_metadata.json'
 
 def gce_get_metadata(path):
   """Queries the GCE metadata server the specified value."""
-  req = urllib2.Request(
+  req = urllib.request.Request(
       'http://metadata/computeMetadata/v1/%s' % path,
       None, {'Metadata-Flavor': 'Google'})
 
-  return urllib2.urlopen(req).read()
+  return urllib.request.urlopen(req).read().decode('utf-8')
 
 
 class Runner(object):
@@ -84,7 +85,7 @@ class Runner(object):
         logging.warning("Overridding project ID %s with %s",
                         project, project_id)
 
-    except urllib2.URLError as e:
+    except urllib.error.URLError as e:
       logging.warning(
           "URLError trying to fetch project ID from Compute Engine metdata")
       logging.warning(e)
@@ -97,8 +98,15 @@ class Runner(object):
         'working_dir': working_dir
         })
 
-    with open(cromwell_conf, 'wb') as f:
-      f.write(new_conf_data)
+    try:
+        # Attempt to write as bytes
+        with open(cromwell_conf, 'wb') as f:
+            f.write(new_conf_data)
+    except TypeError:
+        # If the above fails, write as a string
+        with open(cromwell_conf, 'w') as f:
+            f.write(new_conf_data)
+
 
   def copy_workflow_output(self, result):
     output_files = wdl_outputs_util.get_workflow_output(
